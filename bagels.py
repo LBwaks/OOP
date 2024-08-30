@@ -66,7 +66,7 @@ def getclues(guess,SecretNum):
         # Sort the clues into alphabetical order so their original order
         # doesn't give information away.
         clues.sort()
-        return ''.join(clues)
+        return ' '.join(clues)
 
 if __name__=='__main__':
     main()
