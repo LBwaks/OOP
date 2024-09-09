@@ -51,7 +51,7 @@ def main ():
             if getHandValue(playerHand)>21:
                 break
             #get the players move either H,S,OR D
-            move = getMover(playerHand,money-bet)
+            move = getMove(playerHand,money-bet)
 
             #handle the playe acttions
             if move =='D':
@@ -66,7 +66,7 @@ def main ():
                 rank,suit=newCard
                 print('You drew a {} of {}. '.format(rank,suit))
                 playerHand.append(newCard)
-            if getHandHandValue(playerHand)>21:
+            if getHandValue(playerHand)>21:
                 #the player has busted
                 continue
             if move in ('S','D'):
@@ -91,7 +91,7 @@ def main ():
         if dealerValue>21:
             print('Dealer bursts! You win${}!'.format(bet))
             money+=bet
-        elif(playerValuea>21)or (playerValue<dealerValue):
+        elif(playerValue>21)or (playerValue<dealerValue):
             print('You lost! ')
             money+=bet
         elif playerValue==dealerValue:
@@ -108,10 +108,91 @@ def getBet(maxBet):
      if bet =='QUIT':
          print('THanks for playing')
          sys.exit()
-     if not bet.decimal():
+     if not bet.isdecimal():
          continue #if player dint enteta number ask again
      bet = int(bet)
      if 1<=bet <=maxBet:
          return bet
-                    
-main()
+     
+def getDeck():
+    #return a list of rank suit tupples for all 52 cards
+    deck =[]
+    for suit in (HEARTS,DIAMONDS,SPADES,CLUBS):
+        for rank in range(2,11):
+            deck.append((str(rank),suit))# add the nummbered card
+        for rank in ('J','Q','K','A'):
+            deck.append((rank,suit))#add the fae and ace cards
+    random.shuffle(deck)
+    return deck
+def displayHands(playerHand,dealerHand,showDealearHand):
+    """ show the players and delaers acards Hide the dealers firat cRD IF showdealrhand is false"""
+    print()
+    if showDealearHand:
+        print('Dealer:',getHandValue(dealerHand))
+        displayCards(dealerHand)
+    else:
+        print('DEaler :???')
+        #hide the delaers cards
+        displayCards([BACKSIDE]+dealerHand[1:])
+        # show the playes ard
+    print('PLayer:',getHandValue(playerHand))
+    displayCards(playerHand)   
+
+def getHandValue(cards):
+    """ returns thevalue of the card face cards are worth 10 aces 11 or 1"""
+    value =0
+    numberOfAces=0
+    #add the value for the non ace cards:
+    for card in cards:
+        rank=card[0]#card is atupple like(rank suit)
+        if rank =='A':
+            numberOfAces+=1
+        elif rank in ('K','Q','J'):# face crads are worth 10 point
+            value+=10
+        else:
+            value+=int(rank)
+    value+=numberOfAces # add 1 per ace
+    for i in range(numberOfAces):
+        if value+10<=21:
+            value+=10
+    return value
+
+def displayCards(cards):
+    rows =['','','','']
+
+    for a ,card in enumerate(cards):
+        rows[0] +='___'#print the top line of the card
+        if card ==BACKSIDE:
+            #print a cards back:
+            rows[1]+='|## |'
+            rows[2]+='|###|'
+            rows[3]+='|_##'
+        else:
+            #print the cards front
+            rank,suit =card
+            rows[1]+='|{} |'.format(rank.ljust(2))
+            rows[2]+='| {} |'.format(suit)
+            rows[3]+='|_{}|'.format(rank.rjust(2,'_'))
+    for row in rows:
+        print(row)
+
+def getMove(PLayerHand,money):
+    ''' Ask the player for their move and returns 'H' for hit ,'s' for stand and 'd' for for double down
+    '''
+    while True:#keep looping untl the player enters a correct move
+        moves=['(H)it','(S)tand']
+        #the player can double down on their first move
+        #which we can tell because they will have exactly two cards
+        if len(PLayerHand)==2 and money>0:
+            moves.append('(D)ouble Down')
+        movePromt =', '.join(moves) + '>'
+        move = input(movePromt).upper()
+        if move in ('H','S'):
+            return move
+        if move =='D' and '(D)ouble Down' in moves:
+            return move
+
+
+
+if __name__=='__main__':
+    main()
